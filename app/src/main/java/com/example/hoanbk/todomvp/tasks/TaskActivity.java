@@ -12,11 +12,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.example.hoanbk.todomvp.R;
+import com.example.hoanbk.todomvp.data.source.TaskRepository;
 import com.example.hoanbk.todomvp.utils.ActivityUtils;
 
 public class TaskActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
+
+    private TasksPresenter mTasksPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +49,13 @@ public class TaskActivity extends AppCompatActivity {
             ActivityUtils.addFragmentToActivity(
                     getSupportFragmentManager(), tasksFragment, R.id.contentFrame);
         }
+
+        // Create the presenter
+        mTasksPresenter = new TasksPresenter(
+                TaskRepository.getInstance(null, null), tasksFragment
+        );
+
+        // TODO: 4/16/2017  
     }
 
     @Override
