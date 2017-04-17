@@ -68,7 +68,7 @@ public class TasksFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
-//        mPresenter.start();
+        mPresenter.start();
     }
 
     @Override

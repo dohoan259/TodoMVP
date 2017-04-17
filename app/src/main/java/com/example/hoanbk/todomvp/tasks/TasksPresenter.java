@@ -24,6 +24,7 @@ public class TasksPresenter implements TasksContract.Presenter {
     public TasksPresenter(TaskRepository taskRepository, TasksContract.View tasksView){
         mTaskRepository = taskRepository;
         mTasksView = tasksView;
+        mTasksView.setPresenter(this);
     }
 
     @Override

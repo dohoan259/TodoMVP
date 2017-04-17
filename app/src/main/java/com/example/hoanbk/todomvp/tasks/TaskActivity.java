@@ -13,6 +13,8 @@ import android.view.MenuItem;
 
 import com.example.hoanbk.todomvp.R;
 import com.example.hoanbk.todomvp.data.source.TaskRepository;
+import com.example.hoanbk.todomvp.data.source.remote.TasksRemoteDataSource;
+import com.example.hoanbk.todomvp.prod.Injection;
 import com.example.hoanbk.todomvp.utils.ActivityUtils;
 
 public class TaskActivity extends AppCompatActivity {
@@ -52,10 +54,10 @@ public class TaskActivity extends AppCompatActivity {
 
         // Create the presenter
         mTasksPresenter = new TasksPresenter(
-                TaskRepository.getInstance(null, null), tasksFragment
+                Injection.provideTasksRepository(getApplicationContext()), tasksFragment
         );
 
-        // TODO: 4/16/2017  
+        // TODO: 4/16/2017
     }
 
     @Override
