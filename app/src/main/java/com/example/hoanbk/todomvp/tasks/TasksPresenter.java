@@ -6,9 +6,8 @@ import android.util.Log;
 
 import com.example.hoanbk.todomvp.addedittask.AddEditTaskActivity;
 import com.example.hoanbk.todomvp.data.Task;
-import com.example.hoanbk.todomvp.data.source.TaskRepository;
-import com.example.hoanbk.todomvp.data.source.TasksDataSource;
 import com.example.hoanbk.todomvp.data.source.TasksDataSource.LoadTasksCallback;
+import com.example.hoanbk.todomvp.data.source.TasksRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ public class TasksPresenter implements TasksContract.Presenter {
 
     private static final String TAG = "TasksPresenter";
 
-    private final TaskRepository mTaskRepository;
+    private final TasksRepository mTasksRepository;
 
     private final TasksContract.View mTasksView;
 
@@ -33,8 +32,8 @@ public class TasksPresenter implements TasksContract.Presenter {
 
     private boolean mFirstLoad = true;
 
-    public TasksPresenter(@NonNull TaskRepository taskRepository, @NonNull TasksContract.View tasksView) {
-        mTaskRepository = checkNotNull(taskRepository, "tasksRepository cannot be null!");
+    public TasksPresenter(@NonNull TasksRepository tasksRepository, @NonNull TasksContract.View tasksView) {
+        mTasksRepository = checkNotNull(tasksRepository, "tasksRepository cannot be null!");
         mTasksView = checkNotNull(tasksView, "tasksView cannot be null!");
 
         mTasksView.setPresenter(this);
@@ -56,9 +55,6 @@ public class TasksPresenter implements TasksContract.Presenter {
 
     @Override
     public void loadTasks(boolean forceUpdate) {
-
-        Log.d(TAG, "loadTasks(...)");
-
         // Simplification for sample: a network reload will be forced on first load
         loadTasks(forceUpdate || mFirstLoad, true);
         mFirstLoad = false;
@@ -69,21 +65,18 @@ public class TasksPresenter implements TasksContract.Presenter {
      * @param showLoadingUI Pass in true to display a loading icon in the UI
      */
     private void loadTasks(boolean forceUpdate, final boolean showLoadingUI) {
-
-        Log.d(TAG, "loadTasks(...,...)");
-
         if (showLoadingUI) {
             mTasksView.setLoadIndicator(true);
         }
         if (forceUpdate) {
-            mTaskRepository.refreshTasks();
+            mTasksRepository.refreshTasks();
         }
 
         // The network request might be handled in a different thread so make sure Espresso knows
         // that the app is busy util the response is handled
         // TODO: 4/16/2017
 
-        mTaskRepository.getTasks(new LoadTasksCallback() {
+        mTasksRepository.getTasks(new LoadTasksCallback() {
             @Override
             public void onTasksLoaded(List<Task> tasks) {
                 List<Task> tasksToShow = new ArrayList<>();
@@ -120,9 +113,6 @@ public class TasksPresenter implements TasksContract.Presenter {
                 if (showLoadingUI) {
                     mTasksView.setLoadIndicator(false);
                 }
-
-                Log.d(TAG, "size of tasksToShow: " + tasksToShow.size());
-
                 processTasks(tasksToShow);
             }
 
@@ -190,7 +180,7 @@ public class TasksPresenter implements TasksContract.Presenter {
     @Override
     public void completeTask(@NonNull Task completedTask) {
         checkNotNull(completedTask, "completedTask cannot be null!");
-        mTaskRepository.completeTask(completedTask);
+        mTasksRepository.completeTask(completedTask);
         mTasksView.showTaskMarkedComplete();
         loadTasks(false, false);
     }
@@ -198,14 +188,14 @@ public class TasksPresenter implements TasksContract.Presenter {
     @Override
     public void activateTask(@NonNull Task activeTask) {
         checkNotNull(activeTask, "activeTask cannot be null!");
-        mTaskRepository.activateTask(activeTask);
+        mTasksRepository.activateTask(activeTask);
         mTasksView.showTaskMarkedActive();
         loadTasks(false, false);
     }
 
     @Override
     public void clearCompletedTask() {
-        mTaskRepository.clearCompletedTasks();
+        mTasksRepository.clearCompletedTasks();
         mTasksView.showCompletedTasksCleared();
         loadTasks(false, false);
     }

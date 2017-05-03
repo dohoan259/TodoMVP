@@ -18,11 +18,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Created by hoanbk on 4/16/2017.
  */
 
-public class TaskRepository implements TasksDataSource{
+public class TasksRepository implements TasksDataSource {
 
     private static final String TAG = "TasksRepository";
 
-    private static TaskRepository sInstance = null;
+    private static TasksRepository sInstance = null;
 
     private final TasksDataSource mTasksRemoteDataSource;
 
@@ -39,8 +39,8 @@ public class TaskRepository implements TasksDataSource{
      */
     boolean mCacheIsDirty = false;
 
-    private TaskRepository(@NonNull TasksDataSource tasksRemoteDataSource,
-                           @NonNull TasksDataSource tasksLocalDataSource) {
+    private TasksRepository(@NonNull TasksDataSource tasksRemoteDataSource,
+                            @NonNull TasksDataSource tasksLocalDataSource) {
         mTasksRemoteDataSource = checkNotNull(tasksRemoteDataSource);
         mTasksLocalDataSource = checkNotNull(tasksLocalDataSource);
     }
@@ -48,10 +48,10 @@ public class TaskRepository implements TasksDataSource{
     /**
      * Returns the singleton
      */
-    public static TaskRepository getInstance(TasksDataSource tasksRemoteDataSource,
-                                             TasksDataSource tasksLocalDataSource) {
+    public static TasksRepository getInstance(TasksDataSource tasksRemoteDataSource,
+                                              TasksDataSource tasksLocalDataSource) {
         if (sInstance == null) {
-            sInstance = new TaskRepository(tasksRemoteDataSource, tasksLocalDataSource);
+            sInstance = new TasksRepository(tasksRemoteDataSource, tasksLocalDataSource);
         }
         return sInstance;
     }

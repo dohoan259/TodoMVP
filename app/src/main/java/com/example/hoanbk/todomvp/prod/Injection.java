@@ -2,7 +2,7 @@ package com.example.hoanbk.todomvp.prod;
 
 import android.content.Context;
 
-import com.example.hoanbk.todomvp.data.source.TaskRepository;
+import com.example.hoanbk.todomvp.data.source.TasksRepository;
 import com.example.hoanbk.todomvp.data.source.local.TasksLocalDataSource;
 import com.example.hoanbk.todomvp.data.source.remote.TasksRemoteDataSource;
 
@@ -14,9 +14,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Injection {
 
-    public static TaskRepository provideTasksRepository(Context context) {
+    public static TasksRepository provideTasksRepository(Context context) {
         checkNotNull(context);
-        return TaskRepository.getInstance(TasksRemoteDataSource.getInstance(),
+        return com.example.hoanbk.todomvp.data.source.TasksRepository.getInstance(TasksRemoteDataSource.getInstance(),
                 TasksLocalDataSource.getInstance(context));
     }
 }
