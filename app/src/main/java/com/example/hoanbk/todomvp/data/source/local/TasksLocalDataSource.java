@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import com.example.hoanbk.todomvp.data.Task;
 import com.example.hoanbk.todomvp.data.source.TasksDataSource;
@@ -11,6 +12,8 @@ import com.example.hoanbk.todomvp.data.source.local.TasksPersistanceContract.Tas
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by hoanbk on 4/17/2017.
@@ -22,10 +25,8 @@ public class TasksLocalDataSource implements TasksDataSource {
 
     private TasksDbHelper mDbHelper;
 
-    private TasksLocalDataSource(Context context) {
-        if (context == null) {
-            return;
-        }
+    private TasksLocalDataSource(@NonNull Context context) {
+        checkNotNull(context);
         mDbHelper = new TasksDbHelper(context);
     }
 
@@ -42,7 +43,7 @@ public class TasksLocalDataSource implements TasksDataSource {
      * or the table is empty
      */
     @Override
-    public void getTasks(LoadTasksCallback callback) {
+    public void getTasks(@NonNull LoadTasksCallback callback) {
         List<Task> tasks = new ArrayList<>();
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
@@ -89,7 +90,7 @@ public class TasksLocalDataSource implements TasksDataSource {
      * @param callback
      */
     @Override
-    public void getTask(String taskId, GetTaskCallback callback) {
+    public void getTask(@NonNull String taskId, @NonNull GetTaskCallback callback) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
         String[] projection = {
@@ -131,10 +132,8 @@ public class TasksLocalDataSource implements TasksDataSource {
     }
 
     @Override
-    public void saveTask(Task task) {
-        if (task == null) {
-            return;
-        }
+    public void saveTask(@NonNull Task task) {
+        checkNotNull(task);
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -149,7 +148,7 @@ public class TasksLocalDataSource implements TasksDataSource {
     }
 
     @Override
-    public void completeTask(Task task) {
+    public void completeTask(@NonNull Task task) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -164,12 +163,12 @@ public class TasksLocalDataSource implements TasksDataSource {
     }
 
     @Override
-    public void completeTask(String taskId) {
+    public void completeTask(@NonNull String taskId) {
         // TODO: 4/18/2017
     }
 
     @Override
-    public void activateTask(Task task) {
+    public void activateTask(@NonNull Task task) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -184,7 +183,7 @@ public class TasksLocalDataSource implements TasksDataSource {
     }
 
     @Override
-    public void activateTask(String taskId) {
+    public void activateTask(@NonNull String taskId) {
         // TODO: 4/18/2017
     }
 
@@ -215,7 +214,7 @@ public class TasksLocalDataSource implements TasksDataSource {
     }
 
     @Override
-    public void deleteTask(String taskId) {
+    public void deleteTask(@NonNull String taskId) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         String selection = TaskEntry.COLUMN_NAME_ENTRY_ID + " LIKE ?";

@@ -1,6 +1,8 @@
 package com.example.hoanbk.todomvp.data.source.remote;
 
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.example.hoanbk.todomvp.data.Task;
 import com.example.hoanbk.todomvp.data.source.TasksDataSource;
@@ -15,6 +17,8 @@ import java.util.Map;
  */
 
 public class TasksRemoteDataSource implements TasksDataSource {
+
+    private static final String TAG = "TasksRemoteDataSource";
 
     private static TasksRemoteDataSource sInstance;
 
@@ -49,26 +53,30 @@ public class TasksRemoteDataSource implements TasksDataSource {
      * @param callback
      */
     @Override
-    public void getTasks(final LoadTasksCallback callback) {
+    public void getTasks(final @NonNull LoadTasksCallback callback) {
+
+        Log.d(TAG, "getTasks()");
+
         // Simulate network by delaying the execution
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                Log.d(TAG, "post delay return data from remote");
                 callback.onTasksLoaded(Lists.newArrayList(TASKS_SERVICE_DATA.values()));
             }
         }, SERVICE_LATENCY_IN_MILLIS);
     }
 
     /**
-     * Note: {@Link GetTaskCallback#onDataNotAvailable()} is nerver fired. In a real remote data
+     * Note: {@Link GetTaskCallback#onDataNotAvailable()} is never fired. In a real remote data
      * source implementation, this would be fired if the server can't be contacted or the server
      * returns an error.
      * @param taskId
      * @param callback
      */
     @Override
-    public void getTask(String taskId, final GetTaskCallback callback) {
+    public void getTask(@NonNull String taskId, final @NonNull GetTaskCallback callback) {
         final Task task = TASKS_SERVICE_DATA.get(taskId);
 
         // Simulate network by delaying the execution
@@ -82,29 +90,29 @@ public class TasksRemoteDataSource implements TasksDataSource {
     }
 
     @Override
-    public void saveTask(Task task) {
+    public void saveTask(@NonNull Task task) {
         TASKS_SERVICE_DATA.put(task.getId(), task);
     }
 
     @Override
-    public void completeTask(Task task) {
+    public void completeTask(@NonNull Task task) {
         Task completedTask = new Task(task.getTitle(), task.getDescription(), task.getId(), true);
         TASKS_SERVICE_DATA.put(task.getId(), completedTask);
     }
 
     @Override
-    public void completeTask(String taskId) {
+    public void completeTask(@NonNull String taskId) {
         // TODO: 4/18/2017
     }
 
     @Override
-    public void activateTask(Task task) {
+    public void activateTask(@NonNull Task task) {
         Task activeTask = new Task(task.getTitle(), task.getDescription(), task.getId(), false);
         TASKS_SERVICE_DATA.put(task.getId(), activeTask);
     }
 
     @Override
-    public void activateTask(String taskId) {
+    public void activateTask(@NonNull String taskId) {
         // TODO: 4/18/2017
     }
 
@@ -130,7 +138,7 @@ public class TasksRemoteDataSource implements TasksDataSource {
     }
 
     @Override
-    public void deleteTask(String taskId) {
+    public void deleteTask(@NonNull String taskId) {
         TASKS_SERVICE_DATA.remove(taskId);
     }
 }

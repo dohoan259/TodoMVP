@@ -1,5 +1,7 @@
 package com.example.hoanbk.todomvp.tasks;
 
+import android.support.annotation.NonNull;
+
 import com.example.hoanbk.todomvp.base.BasePresenter;
 import com.example.hoanbk.todomvp.base.BaseView;
 import com.example.hoanbk.todomvp.data.Task;
@@ -33,6 +35,12 @@ public interface TasksContract {
 
         void showNoTasks();
 
+        void showActiveFilterLabel();
+
+        void showCompletedFilterLabel();
+
+        void showAllFilterLabel();
+
         void showNoActiveTasks();
 
         void showNoCompletedTasks();
@@ -40,6 +48,8 @@ public interface TasksContract {
         void showSuccessfullySavedMessage();
 
         boolean isActive();
+
+        void showFilteringPopUpMenu();
     }
 
     interface Presenter extends BasePresenter {
@@ -50,12 +60,16 @@ public interface TasksContract {
 
         void addNewTask();
 
-        void openTaskDetails(Task requestedTask);
+        void openTaskDetails(@NonNull Task requestedTask);
 
-        void completeTask(Task completedTask);
+        void completeTask(@NonNull Task completedTask);
 
-        void activateTask(Task activeTask);
+        void activateTask(@NonNull Task activeTask);
 
         void clearCompletedTask();
+
+        void setFiltering(TasksFilterType requestType);
+
+        TasksFilterType getFiltering();
     }
 }

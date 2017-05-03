@@ -2,12 +2,15 @@ package com.example.hoanbk.todomvp.tasks;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.PopupMenu;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,11 +25,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.hoanbk.todomvp.R;
+import com.example.hoanbk.todomvp.addedittask.AddEditTaskActivity;
 import com.example.hoanbk.todomvp.base.BasePresenter;
 import com.example.hoanbk.todomvp.data.Task;
+import com.example.hoanbk.todomvp.taskdetail.TaskDetailActivity;
+import com.example.hoanbk.todomvp.taskdetail.TaskDetailFragment;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by hoanbk on 4/15/2017.
@@ -34,6 +42,8 @@ import java.util.List;
 
 public class TasksFragment extends Fragment
         implements TasksContract.View {
+
+    private static final String TAG = "TasksFragment";
 
     private TasksContract.Presenter mPresenter;
 
@@ -68,12 +78,15 @@ public class TasksFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
+
+        Log.d(TAG, "onResume()");
+
         mPresenter.start();
     }
 
     @Override
-    public void setPresenter(TasksContract.Presenter presenter) {
-        mPresenter = presenter;
+    public void setPresenter(@NonNull TasksContract.Presenter presenter) {
+        mPresenter = checkNotNull(presenter);
     }
 
     @Override
@@ -151,6 +164,7 @@ public class TasksFragment extends Fragment
                 mPresenter.clearCompletedTask();
                 break;
             case R.id.menu_filter:
+                showFilteringPopUpMenu();
                 break;
             case R.id.menu_refresh:
                 mPresenter.loadTasks(true);
@@ -159,7 +173,35 @@ public class TasksFragment extends Fragment
         return true;
     }
 
+    @Override
+    public void showFilteringPopUpMenu() {
+        PopupMenu popup = new PopupMenu(getContext(), getActivity().findViewById(R.id.menu_filter));
+        popup.getMenuInflater().inflate(R.menu.filter_tasks, popup.getMenu());
 
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.active:
+                        mPresenter.setFiltering(TasksFilterType.ACTIVE_TASKS);
+                        break;
+                    case R.id.completed:
+                        mPresenter.setFiltering(TasksFilterType.COMPLETED_TASKS);
+                        break;
+                    default:
+                        mPresenter.setFiltering(TasksFilterType.ALL_TASKS);
+                }
+                mPresenter.loadTasks(false);
+                return true;
+            }
+        });
+
+        popup.show();
+    }
+
+    /**
+     * Listener for clicks on tasks in the ListView
+     */
     TaskAdapter.TaskItemListener mItemListener = new TaskAdapter.TaskItemListener() {
         @Override
         public void onTaskClick(Task clickedTask) {
@@ -245,15 +287,36 @@ public class TasksFragment extends Fragment
     }
 
     @Override
+    public void showActiveFilterLabel() {
+        Log.d(TAG, "showActiveFilterLabel()");
+        mFilteringLabelView.setText(R.string.nav_active);
+    }
+
+    @Override
+    public void showCompletedFilterLabel() {
+        Log.d(TAG, "showCompletedFilterLabel()");
+        mFilteringLabelView.setText(R.string.nav_completed);
+    }
+
+    @Override
+    public void showAllFilterLabel() {
+        Log.d(TAG, "showAllFilterLabel()");
+        mFilteringLabelView.setText(R.string.nav_all);
+    }
+
+    @Override
     public void showAddTask() {
-        // TODO: 4/16/2017
+        Intent intent = new Intent(getContext(), AddEditTaskActivity.class);
+        startActivityForResult(intent, AddEditTaskActivity.REQUEST_ADD_TASK);
     }
 
     @Override
     public void showTaskDetailsUi(String taskId) {
         // in it's own Activity, since it makes more sense that way and it gives us the flexibility
         // to show some Intent stubbing
-        // TODO: 4/16/2017
+        Intent intent = new Intent(getContext(), TaskDetailActivity.class);
+        intent.putExtra(TaskDetailActivity.EXTRA_TASK_ID, taskId);
+        startActivity(intent);
     }
 
     @Override
@@ -301,7 +364,7 @@ public class TasksFragment extends Fragment
         }
 
         private void setList(List<Task> tasks) {
-            mTasks = tasks;
+            mTasks = checkNotNull(tasks);
         }
 
         @Override

@@ -1,11 +1,19 @@
 package com.example.hoanbk.todomvp.tasks;
 
+import android.app.Activity;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.example.hoanbk.todomvp.addedittask.AddEditTaskActivity;
 import com.example.hoanbk.todomvp.data.Task;
 import com.example.hoanbk.todomvp.data.source.TaskRepository;
 import com.example.hoanbk.todomvp.data.source.TasksDataSource;
+import com.example.hoanbk.todomvp.data.source.TasksDataSource.LoadTasksCallback;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by hoanbk on 4/16/2017.
@@ -15,32 +23,42 @@ import java.util.List;
 
 public class TasksPresenter implements TasksContract.Presenter {
 
+    private static final String TAG = "TasksPresenter";
+
     private final TaskRepository mTaskRepository;
 
     private final TasksContract.View mTasksView;
 
+    private TasksFilterType mCurrentFiltering = TasksFilterType.ALL_TASKS;
+
     private boolean mFirstLoad = true;
 
-    public TasksPresenter(TaskRepository taskRepository, TasksContract.View tasksView){
-        mTaskRepository = taskRepository;
-        mTasksView = tasksView;
+    public TasksPresenter(@NonNull TaskRepository taskRepository, @NonNull TasksContract.View tasksView) {
+        mTaskRepository = checkNotNull(taskRepository, "tasksRepository cannot be null!");
+        mTasksView = checkNotNull(tasksView, "tasksView cannot be null!");
+
         mTasksView.setPresenter(this);
     }
 
     @Override
     public void start() {
+//        Log.d(TAG, "start()");
         loadTasks(false);
     }
 
     @Override
     public void result(int requestCode, int resultCode) {
         // If a task was successfully added, show snackbar
-        // TODO: 4/16/2017
-
+        if (AddEditTaskActivity.REQUEST_ADD_TASK == requestCode && resultCode == Activity.RESULT_OK) {
+            mTasksView.showSuccessfullySavedMessage();
+        }
     }
 
     @Override
     public void loadTasks(boolean forceUpdate) {
+
+        Log.d(TAG, "loadTasks(...)");
+
         // Simplification for sample: a network reload will be forced on first load
         loadTasks(forceUpdate || mFirstLoad, true);
         mFirstLoad = false;
@@ -51,6 +69,9 @@ public class TasksPresenter implements TasksContract.Presenter {
      * @param showLoadingUI Pass in true to display a loading icon in the UI
      */
     private void loadTasks(boolean forceUpdate, final boolean showLoadingUI) {
+
+        Log.d(TAG, "loadTasks(...,...)");
+
         if (showLoadingUI) {
             mTasksView.setLoadIndicator(true);
         }
@@ -62,7 +83,7 @@ public class TasksPresenter implements TasksContract.Presenter {
         // that the app is busy util the response is handled
         // TODO: 4/16/2017
 
-        mTaskRepository.getTasks(new TasksDataSource.LoadTasksCallback() {
+        mTaskRepository.getTasks(new LoadTasksCallback() {
             @Override
             public void onTasksLoaded(List<Task> tasks) {
                 List<Task> tasksToShow = new ArrayList<>();
@@ -74,14 +95,34 @@ public class TasksPresenter implements TasksContract.Presenter {
                 
                 // We filter the tasks based on the requestType
                 for (Task task : tasks) {
-                    // TODO: 4/16/2017  
-                    tasksToShow.add(task);
+                    switch (mCurrentFiltering) {
+                        case ALL_TASKS:
+                            tasksToShow.add(task);
+                            break;
+                        case ACTIVE_TASKS:
+                            if (task.isActive()) {
+                                tasksToShow.add(task);
+                            }
+                            break;
+                        case COMPLETED_TASKS:
+                            if (task.isCompleted()) {
+                                tasksToShow.add(task);
+                            }
+                            break;
+                        default:
+                            tasksToShow.add(task);
+                    }
                 }
                 // The view may not be able to handle UI updates anymore
                 if (!mTasksView.isActive()) {
+                    return;
+                }
+                if (showLoadingUI) {
                     mTasksView.setLoadIndicator(false);
                 }
-                
+
+                Log.d(TAG, "size of tasksToShow: " + tasksToShow.size());
+
                 processTasks(tasksToShow);
             }
 
@@ -109,11 +150,30 @@ public class TasksPresenter implements TasksContract.Presenter {
     }
     
     private void showFilterLabel() {
-        // TODO: 4/16/2017  
+
+        switch (mCurrentFiltering) {
+            case ACTIVE_TASKS:
+                mTasksView.showActiveFilterLabel();
+                break;
+            case COMPLETED_TASKS:
+                mTasksView.showCompletedFilterLabel();
+                break;
+            default:
+                mTasksView.showAllFilterLabel();
+        }
     }
     
     private void processEmptyTasks() {
-        // TODO: 4/16/2017
+        switch (mCurrentFiltering) {
+            case ACTIVE_TASKS:
+                mTasksView.showNoActiveTasks();
+                break;
+            case COMPLETED_TASKS:
+                mTasksView.showNoCompletedTasks();
+                break;
+            default:
+                mTasksView.showNoTasks();
+        }
     }
     
     @Override
@@ -122,28 +182,22 @@ public class TasksPresenter implements TasksContract.Presenter {
     }
 
     @Override
-    public void openTaskDetails(Task requestedTask) {
-        if (requestedTask == null) {
-            return;
-        }
+    public void openTaskDetails(@NonNull Task requestedTask) {
+        checkNotNull(requestedTask, "requestedTask cannot be null!");
         mTasksView.showTaskDetailsUi(requestedTask.getId());
     }
 
     @Override
-    public void completeTask(Task completedTask) {
-        if (completedTask == null) {
-            return;
-        }
+    public void completeTask(@NonNull Task completedTask) {
+        checkNotNull(completedTask, "completedTask cannot be null!");
         mTaskRepository.completeTask(completedTask);
         mTasksView.showTaskMarkedComplete();
         loadTasks(false, false);
     }
 
     @Override
-    public void activateTask(Task activeTask) {
-        if (activeTask == null) {
-            return;
-        }
+    public void activateTask(@NonNull Task activeTask) {
+        checkNotNull(activeTask, "activeTask cannot be null!");
         mTaskRepository.activateTask(activeTask);
         mTasksView.showTaskMarkedActive();
         loadTasks(false, false);
@@ -163,4 +217,13 @@ public class TasksPresenter implements TasksContract.Presenter {
      *                    {@link TasksFilterType#COMPLETED_TASKS}, or
      *                    {@link TasksFilterType#ACTIVE_TASKS}
      */
+    @Override
+    public void setFiltering(TasksFilterType requestType) {
+        mCurrentFiltering = requestType;
+    }
+
+    @Override
+    public TasksFilterType getFiltering() {
+        return mCurrentFiltering;
+    }
 }

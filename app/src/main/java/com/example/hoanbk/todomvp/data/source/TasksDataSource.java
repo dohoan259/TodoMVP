@@ -1,5 +1,7 @@
 package com.example.hoanbk.todomvp.data.source;
 
+import android.support.annotation.NonNull;
+
 import com.example.hoanbk.todomvp.data.Task;
 
 import java.util.List;
@@ -33,17 +35,17 @@ public interface TasksDataSource {
 
     void getTasks(LoadTasksCallback callback);
 
-    void getTask(String taskId, GetTaskCallback callback);
+    void getTask(@NonNull String taskId, @NonNull GetTaskCallback callback);
 
-    void saveTask(Task task);
+    void saveTask(@NonNull Task task);
 
-    void completeTask(Task task);
+    void completeTask(@NonNull Task task);
 
-    void completeTask(String taskId);
+    void completeTask(@NonNull String taskId);
 
-    void activateTask(Task task);
+    void activateTask(@NonNull Task task);
 
-    void activateTask(String taskId);
+    void activateTask(@NonNull String taskId);
 
     void clearCompletedTasks();
 
@@ -51,5 +53,5 @@ public interface TasksDataSource {
 
     void deleteAllTasks();
 
-    void deleteTask(String taskId);
+    void deleteTask(@NonNull String taskId);
 }

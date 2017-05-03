@@ -1,5 +1,9 @@
 package com.example.hoanbk.todomvp.data.source;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
+
 import com.example.hoanbk.todomvp.data.Task;
 
 import java.util.ArrayList;
@@ -8,11 +12,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Created by hoanbk on 4/16/2017.
  */
 
 public class TaskRepository implements TasksDataSource{
+
+    private static final String TAG = "TasksRepository";
 
     private static TaskRepository sInstance = null;
 
@@ -31,10 +39,10 @@ public class TaskRepository implements TasksDataSource{
      */
     boolean mCacheIsDirty = false;
 
-    private TaskRepository(TasksDataSource tasksRemoteDataSource,
-                           TasksDataSource tasksLocalDataSource) {
-        mTasksRemoteDataSource = tasksRemoteDataSource;
-        mTasksLocalDataSource = tasksLocalDataSource;
+    private TaskRepository(@NonNull TasksDataSource tasksRemoteDataSource,
+                           @NonNull TasksDataSource tasksLocalDataSource) {
+        mTasksRemoteDataSource = checkNotNull(tasksRemoteDataSource);
+        mTasksLocalDataSource = checkNotNull(tasksLocalDataSource);
     }
 
     /**
@@ -63,10 +71,8 @@ public class TaskRepository implements TasksDataSource{
      *     to get data.
      */
     @Override
-    public void getTasks(final LoadTasksCallback callback) {
-        if (callback == null) {
-            return;
-        }
+    public void getTasks(final @NonNull LoadTasksCallback callback) {
+        checkNotNull(callback);
 
         // Respond immediately with cache if available and not dirty
         if (mCachedTasks != null && !mCacheIsDirty) {
@@ -82,7 +88,6 @@ public class TaskRepository implements TasksDataSource{
             mTasksLocalDataSource.getTasks(new LoadTasksCallback() {
                 @Override
                 public void onTasksLoaded(List<Task> tasks) {
-                    // TODO: 4/16/2017
                     refreshCache(tasks);
                     callback.onTasksLoaded(new ArrayList<>(mCachedTasks.values()));
                 }
@@ -96,13 +101,9 @@ public class TaskRepository implements TasksDataSource{
     }
 
     @Override
-    public void getTask(final String taskId, final GetTaskCallback callback) {
-        if (taskId == null) {
-            return;
-        }
-        if (callback == null) {
-            return;
-        }
+    public void getTask(final @NonNull String taskId, final @NonNull GetTaskCallback callback) {
+        checkNotNull(taskId);
+        checkNotNull(callback);
 
         Task cachedTask = getTaskWithId(taskId);
 
@@ -149,10 +150,8 @@ public class TaskRepository implements TasksDataSource{
     }
 
     @Override
-    public void saveTask(Task task) {
-        if (task == null) {
-            return;
-        }
+    public void saveTask(@NonNull Task task) {
+        checkNotNull(task);
 
         mTasksRemoteDataSource.saveTask(task);
         mTasksLocalDataSource.saveTask(task);
@@ -165,10 +164,8 @@ public class TaskRepository implements TasksDataSource{
     }
 
     @Override
-    public void completeTask(Task task) {
-        if (task == null) {
-            return;
-        }
+    public void completeTask(@NonNull Task task) {
+        checkNotNull(task);
 
         mTasksRemoteDataSource.completeTask(task);
         mTasksLocalDataSource.completeTask(task);
@@ -183,18 +180,14 @@ public class TaskRepository implements TasksDataSource{
     }
 
     @Override
-    public void completeTask(String taskId) {
-        if (taskId == null) {
-            return;
-        }
+    public void completeTask(@NonNull String taskId) {
+        checkNotNull(taskId);
         completeTask(getTaskWithId(taskId));
     }
 
     @Override
-    public void activateTask(Task task) {
-        if (task == null) {
-            return;
-        }
+    public void activateTask(@NonNull Task task) {
+        checkNotNull(task);
         mTasksRemoteDataSource.activateTask(task);
         mTasksLocalDataSource.activateTask(task);
 
@@ -208,10 +201,8 @@ public class TaskRepository implements TasksDataSource{
     }
 
     @Override
-    public void activateTask(String taskId) {
-        if (taskId == null) {
-            return;
-        }
+    public void activateTask(@NonNull String taskId) {
+        checkNotNull(taskId);
         activateTask(getTaskWithId(taskId));
     }
 
@@ -250,17 +241,21 @@ public class TaskRepository implements TasksDataSource{
     }
 
     @Override
-    public void deleteTask(String taskId) {
-        mTasksRemoteDataSource.deleteTask(taskId);
-        mTasksLocalDataSource.deleteTask(taskId);
+    public void deleteTask(@NonNull String taskId) {
+        mTasksRemoteDataSource.deleteTask(checkNotNull(taskId));
+        mTasksLocalDataSource.deleteTask(checkNotNull(taskId));
 
         mCachedTasks.remove(taskId);
     }
 
-    private void getTasksFromRemoteDataSource(final LoadTasksCallback callback) {
+    private void getTasksFromRemoteDataSource(@NonNull final LoadTasksCallback callback) {
+        Log.d(TAG, "getTasksFromRemoteDataSource()");
+
         mTasksRemoteDataSource.getTasks(new LoadTasksCallback() {
             @Override
             public void onTasksLoaded(List<Task> tasks) {
+                Log.d(TAG, "onTasksLoaded()");
+
                 refreshCache(tasks);
                 refreshLocalDataSource(tasks);
                 callback.onTasksLoaded(new ArrayList<>(mCachedTasks.values()));
@@ -274,6 +269,8 @@ public class TaskRepository implements TasksDataSource{
     }
 
     private void refreshCache(List<Task> tasks) {
+        Log.d(TAG, "refreshCache()");
+
         if (mCachedTasks == null) {
             mCachedTasks = new LinkedHashMap<>();
         }
@@ -285,16 +282,16 @@ public class TaskRepository implements TasksDataSource{
     }
 
     private void refreshLocalDataSource(List<Task> tasks) {
+        Log.d(TAG, "refreshLocalDataSource()");
         mTasksLocalDataSource.deleteAllTasks();
         for (Task task : tasks) {
             mTasksLocalDataSource.saveTask(task);
         }
     }
 
-    private Task getTaskWithId(String id) {
-        if (id == null) {
-            return null;
-        }
+    @Nullable
+    private Task getTaskWithId(@NonNull String id) {
+        checkNotNull(id);
         if (mCachedTasks == null || mCachedTasks.isEmpty()) {
             return null;
         } else {

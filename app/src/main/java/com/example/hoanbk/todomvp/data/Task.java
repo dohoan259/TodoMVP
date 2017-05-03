@@ -1,5 +1,8 @@
 package com.example.hoanbk.todomvp.data;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
@@ -12,10 +15,13 @@ import java.util.UUID;
 
 public final class Task {
 
+    @NonNull
     private final String mId;
 
+    @Nullable
     private final String mTitle;
 
+    @Nullable
     private final String mDescription;
 
     private final boolean mCompleted;
@@ -27,7 +33,7 @@ public final class Task {
      * @param description   description os the task
      */
 
-    public Task(String title, String description) {
+    public Task(@Nullable String title, @Nullable String description) {
         this(title, description, UUID.randomUUID().toString(), false);
     }
 
@@ -38,7 +44,7 @@ public final class Task {
      * @param description   description os the task
      * @param id            id os the task
      */
-    public Task(String title, String description, String id) {
+    public Task(@Nullable String title, @Nullable String description, @NonNull String id) {
         this(title, description, id, false);
     }
 
@@ -49,7 +55,7 @@ public final class Task {
      * @param description   description os the task
      * @param completed     true if the task is completed, false if it's active
      */
-    public Task(String title, String description, boolean completed) {
+    public Task(@Nullable String title, @Nullable String description, boolean completed) {
         this(title, description, UUID.randomUUID().toString(), completed);
     }
 
@@ -62,28 +68,32 @@ public final class Task {
      * @param id            id os the task
      * @param completed     true if the task is completed, false if it's active
      */
-    public Task(String title, String description,
-                String id, boolean completed) {
+    public Task(@Nullable String title, @Nullable String description,
+                @NonNull String id, boolean completed) {
         mId = id;
         mTitle = title;
         mDescription = description;
         mCompleted = completed;
     }
 
+    @NonNull
     public String getId() {return mId;}
 
+    @Nullable
     public String getTitle() {
         return mTitle;
     }
 
+    @Nullable
     public String getTitleForList() {
-        if (mTitle == null || mTitle.equals("")) {
-            return mDescription;
-        } else {
+        if (!Strings.isNullOrEmpty(mTitle)) {
             return mTitle;
+        } else {
+            return mDescription;
         }
     }
 
+    @Nullable
     public String getDescription() {
         return mDescription;
     }
@@ -96,7 +106,7 @@ public final class Task {
 
     public boolean isEmpty() {
         return Strings.isNullOrEmpty(mTitle)
-                && Strings.isNullOrEmpty(mDescription);
+                || Strings.isNullOrEmpty(mDescription);
     }
 
     @Override
